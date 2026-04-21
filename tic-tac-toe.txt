@@ -1,0 +1,21 @@
+I created the player configuration and the different squares. I tried 9 react variables labelled square1 to square 9, and tried to create different functions for it, until I wondered if I could fill out an array of 9 squares with empty strings and replace the text later. I then created three button groups for three buttons in each one. I added the functions to it and then ran the website.
+
+Current Issues:
+- Small flex box configuration (Fixed) - Changed width in styles.css
+- Small buttons (Fixed) - Changed width of .square in styles.css
+- Pressing the buttons don't change anything (Fixed) - Wrong function names
+
+Changing the buttons to the flex type of square fixed it slightly. The reason I couldn't use onClick was because I mistyped the wrong function into the onClick field. Reset button works and there is text that shows what player is being used, and it always resets too.
+
+Need to Dos:
+- Apply win conditions
+- Stop gameplay when tictactoe is won
+
+I applied the win conditions and stopped gameplay when tictactoe is won. However, it doesn't update all the conditions.
+
+Current Bugs:
+- Doesn't show winner at the bottom flex (Fixed) - took out irrelevant variable playerwin
+- Only doesn't allow more input, a turn after one of the players win (Fixed) - needed to change ordering of code in changeSquare function
+- Resetting doesn't allow for more input (Fixed) - wrong variable types, changed from bools to integer
+
+The program works!
