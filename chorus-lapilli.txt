@@ -1,0 +1,27 @@
+I created a system where terni lapilli would work, with new variables that track the pieces of each player on the board and whether or not to move them (player1Pieces, player2Pieces)
+
+Current Issues:
+- It shows up as only a regular set of tictactoe
+- My implementation doesn't do anything
+
+I decided to change the player1Pieces and player2Pieces into an ongoing array that adds with every turn and only starts moving when it becomes to tictactoe. It still only shows up as a regular set of tictactoe. I may switch from using an order of all placement history to phases from placing 3 pieces and then a phase of moving to them to see if that works, and using something that holds both how many x's on the board and o's there are on the board.
+
+I implemented the phases so it can't go back to a regular tic tac toe game, by only switching via turn order becoming at least 6 and it works up to the point of placing. I am currently in the process of creating the movement part of the phases.
+
+Solved:
+- Placement and changing phases upon finishing all 3 pieces on the board
+
+Unsolved:
+- Movement
+
+I think the problem is with the least recently used I am using, so I am going to try instead of order number and order to use an index of what order each one has been used in and continue to change that. I also formatted the document because it was getting kind of messy trying to figure out where each function was with all the different messy tabs I kept using instead of keeping consistent.
+
+I got the game to work by implementing a Least Recently Used Policy and then using that with the phases.
+
+Solved:
+- Movement (used LRU policy to help select the index and replaced the other one)
+- Order Number (just used how many turns have been going on and resetting)
+
+I am going to add a selected stage just to see if I can change the color of the one that is going to change and see how it goes so it is visually understandable which one will change.
+
+I couldn't figure it out, but I will test the current code to see if it's playable.
