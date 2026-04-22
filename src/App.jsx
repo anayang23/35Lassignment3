@@ -8,30 +8,42 @@ export default function App() {
   const [squares, setSquares] = React.useState(Array(9).fill("")); // actual board
   const [whoWon, setWhoWon] = React.useState(""); // who won
   const [phase, setPhase] = React.useState("place"); // phases of placing vs moving
-  const [lastUsed, setLastUsed] = React.useState(Array(9).fill(null));
   const [turnNumber, increment] = React.useState(1);
+  const [selected, setSelected] = React.useState(null);
 
   // function changePlayer changes player 
   const changePlayer = () =>
     setPlayer(player === 1 ? 2 : 1);
 
-  // function getLRU shows the least recently use of them all
-  const getLRUPiece = (symbol) => {
-    let index = -1;
-    let minimum = 9999999999999;
-
-    // for loop to find the minimum value
-    squares.forEach((val, i) => {
-      if (val === symbol && lastUsed[i] < minimum) {
-        minimum = lastUsed[i];
-        index = i;
-      }
-    });
-
-    if(index === -1) return null;
-
-    return index;
+  // adjacency maps indexes and the different symbols
+  const adjacency = {
+    0: [1, 3, 4],
+    1: [0, 2, 4],
+    2: [1, 5, 4],
+    3: [0, 6, 4],
+    4: [0, 1, 2, 3, 5, 6, 7, 8], // center connects to all
+    5: [2, 8, 4],
+    6: [3, 7, 4],
+    7: [6, 8, 4],
+    8: [5, 7, 4]
   };
+
+  // function to see if the player actually has any moves they can do and if they can continue the game
+  // no softlock option
+  function canPlayerMove(squares, symbol) {
+    for (let i = 0; i < squares.length; i++) {
+      if (squares[i] !== symbol) continue;
+
+      const moves = adjacency[i];
+
+      for (const j of moves) {
+        if (squares[j] === "") {
+          return true; // found at least one legal move
+        }
+      }
+    }
+    return false;
+  }
 
   // function changes the array to have updated text, makes sure overwriting doesn't happen
   // writing when won can't happen either
@@ -50,15 +62,13 @@ export default function App() {
 
       newSquares[index] = symbol; // writes symbol onto function
 
-      // updating LRU policy
-      const newLastUsed = [...lastUsed];
-      newLastUsed[index] = now;
-
-      setLastUsed(newLastUsed);
-
       winConditions(newSquares);
 
-      increment(turnNumber + 1);
+      increment(prev => {
+        const next = prev + 1;
+        if (next > 6) setPhase("move");
+        return next;
+      });
 
 
       // prevents writing when something is won
@@ -78,22 +88,41 @@ export default function App() {
 
     // only when phase is "move" does this trigger
 
-    // prevent overwriting
+    // needs to select center and change, otherwise it won't work
+    if (newSquares[4] === symbol && selected !== 4) {
+      if (index === 4) {
+        setSelected(4);
+      }
+      return;
+    }
+
+    // only changes when selected hasn't been selected
+    if (selected === null) {
+      if (newSquares[index] === symbol) {
+        setSelected(index); // changes selected
+      }
+      return;
+    }
+
+    // allow re-selecting / unselecting / switching pieces
+    if (squares[index] === symbol) {
+      setSelected(prev => {
+        if (prev === index) return null; // unselect
+        return index; // switch selection
+      });
+      return;
+    }
+
+    // prevent overwriting (has to be empty)
     if (newSquares[index] !== "") return;
 
-    newIndex = getLRUPiece(symbol);
+    // prevents not writing if not adjacent
+    if (!adjacency[selected].includes(index)) return;
 
-    if(newSquares[4] === symbol) {
-      newIndex = 4;
-    }
-    newSquares[newIndex] = "";
 
     // moves the square to a different one
     newSquares[index] = symbol;
-    
-    const newLastUsed = [...lastUsed];
-    newLastUsed[index] = now;
-    setLastUsed(newLastUsed);
+    newSquares[selected] = ""; // erases current one
 
     winConditions(newSquares);
 
@@ -101,6 +130,18 @@ export default function App() {
     // prevents writing when something is won
     if (whoWon !== "") return;
     setSquares(newSquares);
+    setSelected(null);
+
+    // predicting and making sure they can't falsely move
+    const nextPlayer = player === 1 ? 2 : 1;
+    const nextSymbol = nextPlayer === 1 ? "X" : "O";
+
+    if (!canPlayerMove(newSquares, nextSymbol)) {
+      setWhoWon(`Player ${player} wins! Player ${nextPlayer} has no legal moves.`);
+      return;
+    }
+
+
     changePlayer();
 
   };
@@ -111,8 +152,8 @@ export default function App() {
     setSquares(Array(9).fill(""));
     setWhoWon("");
     setPhase("place");
-    setLastUsed(Array(9).fill(null));
     increment(1);
+    setSelected(null);
   }
 
   // determines what exactly are win conditions in the tictactoe game
@@ -169,19 +210,19 @@ export default function App() {
           </h3>
           <div>
             <ButtonGroup>
-              <Button className="square" onClick={() => changeSquare(0)}>{squares[0]}</Button>
-              <Button className="square" onClick={() => changeSquare(1)}>{squares[1]}</Button>
-              <Button className="square" onClick={() => changeSquare(2)}>{squares[2]}</Button>
+              <Button className="square" onClick={() => changeSquare(0)} className={`square ${selected === 0 && whoWon ===  "" ? "selected" : ""}`}>{squares[0]}</Button>
+              <Button className="square" onClick={() => changeSquare(1)} className={`square ${selected === 1 && whoWon ===  "" ? "selected" : ""}`}>{squares[1]}</Button>
+              <Button className="square" onClick={() => changeSquare(2)} className={`square ${selected === 2 && whoWon ===  "" ? "selected" : ""}`}>{squares[2]}</Button>
             </ButtonGroup>
             <ButtonGroup>
-              <Button className="square" onClick={() => changeSquare(3)}>{squares[3]}</Button>
-              <Button className="square" onClick={() => changeSquare(4)}>{squares[4]}</Button>
-              <Button className="square" onClick={() => changeSquare(5)}>{squares[5]}</Button>
+              <Button className="square" onClick={() => changeSquare(3)} className={`square ${selected === 3 && whoWon ===  "" ? "selected" : ""}`}>{squares[3]}</Button>
+              <Button className="square" onClick={() => changeSquare(4)} className={`square ${selected === 4 && whoWon ===  "" ? "selected" : ""}`}>{squares[4]}</Button>
+              <Button className="square" onClick={() => changeSquare(5)} className={`square ${selected === 5 && whoWon ===  "" ? "selected" : ""}`}>{squares[5]}</Button>
             </ButtonGroup>
             <ButtonGroup>
-              <Button className="square" onClick={() => changeSquare(6)}>{squares[6]}</Button>
-              <Button className="square" onClick={() => changeSquare(7)}>{squares[7]}</Button>
-              <Button className="square" onClick={() => changeSquare(8)}>{squares[8]}</Button>
+              <Button className="square" onClick={() => changeSquare(6)} className={`square ${selected === 6 && whoWon ===  "" ? "selected" : ""}`}>{squares[6]}</Button>
+              <Button className="square" onClick={() => changeSquare(7)} className={`square ${selected === 7 && whoWon ===  "" ? "selected" : ""}`}>{squares[7]}</Button>
+              <Button className="square" onClick={() => changeSquare(8)} className={`square ${selected === 8 && whoWon ===  "" ? "selected" : ""}`}>{squares[8]}</Button>
             </ButtonGroup>
           </div>
           <div>

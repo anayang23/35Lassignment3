@@ -155,6 +155,44 @@ class TestChorusLapilli(unittest.TestCase):
         tiles[0].click()
         self.assertTileIs(tiles[0], self.SYMBOL_X)
 
+    def test_row_win(self):
+        '''Check if clicking 3 X's in a row will cause a win.'''
+        tiles = self.driver.find_elements(By.XPATH, self.BOARD_TILE_XPATH)
+        # X: 0, 1, 2
+        tiles[0].click()  # X
+        tiles[3].click()  # O
+        tiles[1].click()  # X
+        tiles[4].click()  # O
+        tiles[2].click()  # X wins
+        self.assertIn("Player 1 has won the game", self.driver.page_source)
+
+    def test_win_click(self):
+        '''Check if you can still click after they win.'''
+        tiles = self.driver.find_elements(By.XPATH, self.BOARD_TILE_XPATH)
+        # X: 0, 1, 2
+        tiles[0].click()  # X
+        tiles[3].click()  # O
+        tiles[1].click()  # X
+        tiles[4].click()  # O
+        tiles[2].click()  # X wins
+        tiles[8].click() # extra click
+        self.assertTileIs(tiles[8], self.SYMBOL_BLANK)
+
+    def test_adjacent_click(self):
+        '''Check if you can only click adjacent.'''
+        tiles = self.driver.find_elements(By.XPATH, self.BOARD_TILE_XPATH)
+        # X: 0, 1, 2
+        tiles[0].click()  # X
+        tiles[3].click()  # O
+        tiles[1].click()  # X
+        tiles[4].click()  # O
+        tiles[8].click()  # X
+        tiles[6].click()  # O
+        tiles[8].click() # select X
+        tiles[7].click() # should move
+        self.assertTileIs(tiles[8], self.SYMBOL_BLANK)
+        self.assertTileIs(tiles[7], self.SYMBOL_X)
+
 
 # ================= [DO NOT MAKE ANY CHANGES BELOW THIS LINE] =================
 

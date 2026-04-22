@@ -25,3 +25,16 @@ Solved:
 I am going to add a selected stage just to see if I can change the color of the one that is going to change and see how it goes so it is visually understandable which one will change.
 
 I couldn't figure it out, but I will test the current code to see if it's playable.
+
+After testing it, I realized that the assignment is asking for the user to select the different one so I have to rework the policy to be the one selected.
+
+I added a selected variable and took out the LRU policy. I also added a CSS style for when the button would show visually when selected (via the classname selected and using the selected variable).
+
+Current Issues:
+- User gets soft locked when they can't move and there's no detection for it becoming softlocked
+
+Fixed: Soft locking was fixing by allowing user to select and unselect pieces, as well as having a win condition for having no possible moves anymore
+
+Format Changes: Allowing for selection not to be shown when someone won.
+
+I added new tests to the test python file as well on top of that.

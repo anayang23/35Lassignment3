@@ -93,3 +93,7 @@ ul {
   font-size: 75px;
   text-align: center;
 }
+
+.selected {
+  border: 10px solid navy;
+}
