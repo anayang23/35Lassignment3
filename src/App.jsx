@@ -49,6 +49,7 @@ export default function App() {
   // writing when won can't happen either
   // and it changes to the next player
   const changeSquare = (index) => {
+    if (whoWon !== "") return;
     const newSquares = [...squares];
     const symbol = player === 1 ? "X" : "O";
     const now = Date.now(); // the time now at time of refresh
@@ -62,17 +63,18 @@ export default function App() {
 
       newSquares[index] = symbol; // writes symbol onto function
 
-      winConditions(newSquares);
+      const result = winConditions(newSquares);
+      if (result !== "") {
+        setSquares(newSquares);
+        setWhoWon(result);
+        return;
+      }
 
       increment(prev => {
         const next = prev + 1;
         if (next > 6) setPhase("move");
         return next;
       });
-
-
-      // prevents writing when something is won
-      if (whoWon !== "") return;
 
       setSquares(newSquares);
       changePlayer();
@@ -87,15 +89,15 @@ export default function App() {
     }
 
     // only when phase is "move" does this trigger
-
-    // needs to select center and change, otherwise it won't work
-    if (newSquares[4] === symbol && selected !== 4) {
-      if (index === 4) {
-        setSelected(4);
-      }
-      return;
-    }
-
+    /*
+        // needs to select center and change, otherwise it won't work
+        if (newSquares[4] === symbol && selected !== 4) {
+          if (index === 4) {
+            setSelected(4);
+          }
+          return;
+        }
+    */
     // only changes when selected hasn't been selected
     if (selected === null) {
       if (newSquares[index] === symbol) {
@@ -113,22 +115,38 @@ export default function App() {
       return;
     }
 
-    // prevent overwriting (has to be empty)
-    if (newSquares[index] !== "") return;
+    if (newSquares[index] !== "") {
+      setSelected(null);
+      return;
+    }
 
-    // prevents not writing if not adjacent
-    if (!adjacency[selected].includes(index)) return;
+    if (!adjacency[selected].includes(index)) {
+      setSelected(null);
+      return;
+    }
 
 
     // moves the square to a different one
     newSquares[index] = symbol;
     newSquares[selected] = ""; // erases current one
 
-    winConditions(newSquares);
+    const result = winConditions(newSquares);
+
+    // center rule check
+    if (newSquares[4] === symbol && result === "") {
+      if (squares[4] !== "") {
+        setSelected(null);
+        return; // invalid move → does not win
+      }
+    }
+
+    if (result !== "") {
+      setSquares(newSquares);
+      setWhoWon(result);
+      return;
+    }
 
 
-    // prevents writing when something is won
-    if (whoWon !== "") return;
     setSquares(newSquares);
     setSelected(null);
 
@@ -161,40 +179,40 @@ export default function App() {
 
     // 1, 2, 3
     if (squares[0] === squares[1] && squares[1] === squares[2] && squares[0] !== "") {
-      (squares[0] === "X") ? (setWhoWon("Player 1 has won the game!")) : (setWhoWon("Player 2 has won the game!"));
+      return (squares[0] === "X") ? ("Player 1 has won the game!") : ("Player 2 has won the game!");
     }
     // 4, 5, 6
     else if (squares[3] === squares[4] && squares[4] === squares[5] && squares[3] !== "") {
-      (squares[3] === "X") ? (setWhoWon("Player 1 has won the game!")) : (setWhoWon("Player 2 has won the game!"));
+      return (squares[3] === "X") ? (("Player 1 has won the game!")) : (("Player 2 has won the game!"));
     }
     // 7, 8, 9
     else if (squares[6] === squares[7] && squares[7] === squares[8] && squares[6] !== "") {
-      (squares[6] === "X") ? (setWhoWon("Player 1 has won the game!")) : (setWhoWon("Player 2 has won the game!"));
+      return (squares[6] === "X") ? (("Player 1 has won the game!")) : (("Player 2 has won the game!"));
     }
     // 1, 4, 7
     else if (squares[0] === squares[3] && squares[3] === squares[6] && squares[0] !== "") {
-      (squares[0] === "X") ? (setWhoWon("Player 1 has won the game!")) : (setWhoWon("Player 2 has won the game!"));
+      return (squares[0] === "X") ? (("Player 1 has won the game!")) : (("Player 2 has won the game!"));
     }
     // 2, 5, 8
     else if (squares[1] === squares[4] && squares[4] === squares[7] && squares[1] !== "") {
-      (squares[1] === "X") ? (setWhoWon("Player 1 has won the game!")) : (setWhoWon("Player 2 has won the game!"));
+      return (squares[1] === "X") ? (("Player 1 has won the game!")) : (("Player 2 has won the game!"));
     }
     // 3, 6, 9
     else if (squares[2] === squares[5] && squares[5] === squares[8] && squares[2] !== "") {
-      (squares[2] === "X") ? (setWhoWon("Player 1 has won the game!")) : (setWhoWon("Player 2 has won the game!"));
+      return (squares[2] === "X") ? (("Player 1 has won the game!")) : (("Player 2 has won the game!"));
     }
     // 1,5,9
     else if (squares[0] === squares[4] && squares[4] === squares[8] && squares[0] !== "") {
-      (squares[0] === "X") ? (setWhoWon("Player 1 has won the game!")) : (setWhoWon("Player 2 has won the game!"));
+      return (squares[0] === "X") ? (("Player 1 has won the game!")) : (("Player 2 has won the game!"));
     }
     // 3,5,7
     else if (squares[2] === squares[4] && squares[4] === squares[6] && squares[2] !== "") {
-      (squares[2] === "X") ? (setWhoWon("Player 1 has won the game!")) : (setWhoWon("Player 2 has won the game!"));
+      return (squares[2] === "X") ? (("Player 1 has won the game!")) : (("Player 2 has won the game!"));
     }
     else if (squares.every(s => s !== "")) { // tie (every tile is filled)
-      setWhoWon("Player 1 and Player 2 have tied!");
+      return "Player 1 and Player 2 have tied!";
     }
-
+    return "";
   }
 
 
@@ -210,19 +228,19 @@ export default function App() {
           </h3>
           <div>
             <ButtonGroup>
-              <Button className="square" onClick={() => changeSquare(0)} className={`square ${selected === 0 && whoWon ===  "" ? "selected" : ""}`}>{squares[0]}</Button>
-              <Button className="square" onClick={() => changeSquare(1)} className={`square ${selected === 1 && whoWon ===  "" ? "selected" : ""}`}>{squares[1]}</Button>
-              <Button className="square" onClick={() => changeSquare(2)} className={`square ${selected === 2 && whoWon ===  "" ? "selected" : ""}`}>{squares[2]}</Button>
+              <Button onClick={() => changeSquare(0)} className={`square ${selected === 0 && whoWon === "" ? "selected" : ""}`}>{squares[0]}</Button>
+              <Button onClick={() => changeSquare(1)} className={`square ${selected === 1 && whoWon === "" ? "selected" : ""}`}>{squares[1]}</Button>
+              <Button onClick={() => changeSquare(2)} className={`square ${selected === 2 && whoWon === "" ? "selected" : ""}`}>{squares[2]}</Button>
             </ButtonGroup>
             <ButtonGroup>
-              <Button className="square" onClick={() => changeSquare(3)} className={`square ${selected === 3 && whoWon ===  "" ? "selected" : ""}`}>{squares[3]}</Button>
-              <Button className="square" onClick={() => changeSquare(4)} className={`square ${selected === 4 && whoWon ===  "" ? "selected" : ""}`}>{squares[4]}</Button>
-              <Button className="square" onClick={() => changeSquare(5)} className={`square ${selected === 5 && whoWon ===  "" ? "selected" : ""}`}>{squares[5]}</Button>
+              <Button onClick={() => changeSquare(3)} className={`square ${selected === 3 && whoWon === "" ? "selected" : ""}`}>{squares[3]}</Button>
+              <Button onClick={() => changeSquare(4)} className={`square ${selected === 4 && whoWon === "" ? "selected" : ""}`}>{squares[4]}</Button>
+              <Button onClick={() => changeSquare(5)} className={`square ${selected === 5 && whoWon === "" ? "selected" : ""}`}>{squares[5]}</Button>
             </ButtonGroup>
             <ButtonGroup>
-              <Button className="square" onClick={() => changeSquare(6)} className={`square ${selected === 6 && whoWon ===  "" ? "selected" : ""}`}>{squares[6]}</Button>
-              <Button className="square" onClick={() => changeSquare(7)} className={`square ${selected === 7 && whoWon ===  "" ? "selected" : ""}`}>{squares[7]}</Button>
-              <Button className="square" onClick={() => changeSquare(8)} className={`square ${selected === 8 && whoWon ===  "" ? "selected" : ""}`}>{squares[8]}</Button>
+              <Button onClick={() => changeSquare(6)} className={`square ${selected === 6 && whoWon === "" ? "selected" : ""}`}>{squares[6]}</Button>
+              <Button onClick={() => changeSquare(7)} className={`square ${selected === 7 && whoWon === "" ? "selected" : ""}`}>{squares[7]}</Button>
+              <Button onClick={() => changeSquare(8)} className={`square ${selected === 8 && whoWon === "" ? "selected" : ""}`}>{squares[8]}</Button>
             </ButtonGroup>
           </div>
           <div>
